@@ -1,8 +1,7 @@
 ﻿from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from bot.keyboards.inline import get_create_draw_keyboard
-from aiogram.filters import Command
 
 router = Router()
 
@@ -24,10 +23,14 @@ async def cmd_start(message: Message):
 async def cmd_test(message: Message):
     import requests
     try:
-        resp = requests.post('https://tgappka-pi.vercel.app/api/ping', json={'user_id': message.from_user.id}, timeout=7)
+        resp = requests.post(
+            'https://tgappka-pi.vercel.app/api/ping',
+            json={'user_id': message.from_user.id},
+            timeout=7
+        )
         if resp.ok:
-            await message.answer('Тестовый ping отправлен!', parse_mode=None)
+            await message.answer('✅ Тестовый ping отправлен!', parse_mode=None)
         else:
-            await message.answer('Ошибка ping API: ' + resp.text)
+            await message.answer(f'❌ Ошибка API: {resp.status_code}', parse_mode=None)
     except Exception as e:
-        await message.answer(f'Ошибка HTTP: {str(e)}')
+        await message.answer(f'❌ Ошибка запроса: {str(e)[:100]}', parse_mode=None)
