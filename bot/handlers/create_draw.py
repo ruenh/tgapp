@@ -324,7 +324,7 @@ async def confirm_create(callback: CallbackQuery, state: FSMContext, bot: Bot):
     
     # Отправить сообщение в первый канал
     first_channel = data["channels"][0]["username"]
-    draw_text = format_draw_message(data)
+    draw_text = format_draw_message(data) + "\n\n👇 Нажмите кнопку ниже чтобы участвовать"
     
     try:
         sent_message = await bot.send_message(

@@ -18,3 +18,15 @@ async def cmd_start(message: Message):
         'Нажми на кнопку ниже, чтобы начать! 🚀'
     )
     await message.answer(text=welcome_text, reply_markup=get_create_draw_keyboard())
+
+@router.message(Command('test'))
+async def cmd_test(message: Message):
+    import requests
+    try:
+        resp = requests.post('https://tgappka-pi.vercel.app/api/ping', json={'user_id': message.from_user.id}, timeout=7)
+        if resp.ok:
+            await message.answer('Тестовый ping отправлен!') 
+        else:
+            await message.answer('Ошибка ping API: ' + resp.text)
+    except Exception as e:
+        await message.answer(f'Ошибка HTTP: {str(e)}')
