@@ -2,62 +2,181 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <title>Mini App для Telegram</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Участие в розыгрыше</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
-      <div id="loading" class="screen active">
-        <div class="spinner"></div>
-        <p>Проверка условий...</p>
-      </div>
-      <div id="success" class="screen">
-        <div class="icon success-icon">✅</div>
-        <h2>Поздравляем!</h2>
-        <p>Вы успешно участвуете в розыгрыше!</p>
-      </div>
-      <div id="already" class="screen">
-        <div class="icon info-icon">ℹ️</div>
-        <h2>Вы уже участвуете</h2>
-        <p>Вы уже зарегистрированы в этом розыгрыше</p>
-      </div>
-      <div id="error" class="screen">
-        <div class="icon error-icon">❌</div>
-        <h2>Требуется подписка</h2>
-        <p id="error-message">Вы не подписаны на все нужные каналы</p>
-        <div id="channels-list" class="channels-list"></div>
-        <button id="retry-btn" class="btn btn-primary">Проверить снова</button>
-      </div>
-      <div id="fatal-error" class="screen">
-        <div class="icon error-icon">⚠️</div>
-        <h2>Произошла ошибка</h2>
-        <p id="fatal-error-message">Попробуйте позже</p>
-      </div>
-    </div>
-    <script src="script.js"></script>
+      <h1>Добро пожаловать в Telegram Mini App!</h1>
+      <p>Это стартовая страница мини-приложения для участия в розыгрышах.</p>
+      <ul>
+        <li>
+          Вы можете участвовать в активных розыгрышах через ссылки Telegram
+        </li>
+        <li>А кнопкой ниже — протестировать связь Mini App ⇄ бот</li>
+      </ul>
+      <button id="health-btn">Тестировать связь Mini App → Бот</button>
+      <div id="health-status" style="margin-top: 1em"></div>
 
-    <div class="container">
-      <h1>Mini App для Telegram</h1>
-      <p>Вы зашли на главную страницу приложения для розыгрыша</p>
-      <button id="ping-btn">Тест связи Mini App → Бот</button>
-      <div id="ping-status"></div>
+      <hr style="margin: 2em 0" />
+
+      <div>
+        <h2>Проверка участия в розыгрыше</h2>
+        <div id="main-content">
+          <div id="loading" class="screen">
+            <div class="spinner"></div>
+            <p>Проверка условий...</p>
+          </div>
+
+          <div id="success" class="screen">
+            <div class="icon success-icon">✅</div>
+            <h2>Поздравляем!</h2>
+            <p>Вы успешно участвуете в розыгрыше!</p>
+          </div>
+
+          <div id="already" class="screen">
+            <div class="icon info-icon">ℹ️</div>
+            <h2>Вы уже участвуете</h2>
+            <p>Вы уже зарегистрированы в этом розыгрыше</p>
+          </div>
+
+          <div id="error" class="screen">
+            <div class="icon error-icon">❌</div>
+            <h2>Требуется подписка</h2>
+            <p id="error-message">Вы не подписаны на все нужные каналы</p>
+            <div id="channels-list" class="channels-list"></div>
+            <button id="retry-btn" class="btn btn-primary">
+              Проверить снова
+            </button>
+          </div>
+
+          <div id="fatal-error" class="screen">
+            <div class="icon error-icon">⚠️</div>
+            <h2>Произошла ошибка</h2>
+            <p id="fatal-error-message">Попробуйте позже</p>
+          </div>
+        </div>
+      </div>
     </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-      document.getElementById("ping-btn").onclick = function () {
+      /* --- Healthcheck: Ping бот через Mini App --- */
+      document.getElementById("health-btn").onclick = function () {
+        const userId = 1327903698; // Замените на свой Telegram user id для теста
         fetch("/api/ping", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: 1327903698 }),
+          body: JSON.stringify({ user_id: userId }),
         })
           .then((res) => res.json())
           .then((json) => {
-            document.getElementById("ping-status").innerHTML = json.ok
-              ? "Ping отправлен, проверьте ЛС от бота!"
+            document.getElementById("health-status").innerText = json.ok
+              ? "Ping успешно отправлен, проверьте Telegram!"
               : "Ошибка при отправке!";
+          })
+          .catch((e) => {
+            document.getElementById("health-status").innerText =
+              "Ошибка запроса: " + e;
           });
       };
+
+      /* --- Проверка участия: Автоматически при наличии draw_id --- */
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const drawId = urlParams.get("draw_id");
+
+      // Отображение только логики для страницы розыгрыша
+      if (drawId) {
+        const tg =
+          window.Telegram && window.Telegram.WebApp
+            ? window.Telegram.WebApp
+            : null;
+        const initData = tg ? tg.initDataUnsafe : {};
+        const user = initData ? initData.user : null;
+
+        function showScreen(screenName) {
+          ["loading", "success", "already", "error", "fatal-error"].forEach(
+            (k) => {
+              const el = document.getElementById(k);
+              if (el) el.style.display = k === screenName ? "block" : "none";
+            }
+          );
+        }
+
+        showScreen("loading");
+
+        async function checkParticipation() {
+          if (!user) {
+            showScreen("fatal-error");
+            document.getElementById("fatal-error-message").textContent =
+              "Не удалось определить пользователя в Telegram WebApp";
+            return;
+          }
+          try {
+            const response = await fetch("/api/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_id: user.id,
+                first_name: user.first_name,
+                username: user.username || null,
+                draw_id: drawId,
+              }),
+            });
+            const data = await response.json();
+            if (data.success) {
+              if (data.already_participating) {
+                showScreen("already");
+              } else {
+                showScreen("success");
+                if (tg && tg.HapticFeedback)
+                  tg.HapticFeedback.notificationOccurred("success");
+              }
+            } else {
+              showScreen("error");
+              document.getElementById("error-message").textContent =
+                data.message;
+              // отобразить отсутствующие каналы
+              if (data.missing_channels && data.missing_channels.length > 0) {
+                const channelsList = document.getElementById("channels-list");
+                channelsList.innerHTML =
+                  "<p>Подпишитесь на:</p>" +
+                  data.missing_channels
+                    .map(
+                      (ch) =>
+                        `<div class="channel-item"><span>${ch}</span> <a target="_blank" href="https://t.me/${ch.replace(
+                          "@",
+                          ""
+                        )}">→</a></div>`
+                    )
+                    .join("");
+              }
+              if (tg && tg.HapticFeedback)
+                tg.HapticFeedback.notificationOccurred("error");
+            }
+          } catch (error) {
+            showScreen("fatal-error");
+            document.getElementById("fatal-error-message").textContent =
+              "Ошибка проверки: " + error;
+          }
+        }
+
+        document.getElementById("retry-btn").onclick = () => {
+          showScreen("loading");
+          setTimeout(checkParticipation, 500);
+        };
+
+        checkParticipation();
+      } else {
+        // Не показывать формы участия если нет draw_id
+        ["loading", "success", "already", "error", "fatal-error"].forEach(
+          (k) => {
+            const el = document.getElementById(k);
+            if (el) el.style.display = "none";
+          }
+        );
+      }
     </script>
   </body>
 </html>

@@ -26,7 +26,7 @@ async def cmd_test(message: Message):
     try:
         resp = requests.post('https://tgappka-pi.vercel.app/api/ping', json={'user_id': message.from_user.id}, timeout=7)
         if resp.ok:
-            await message.answer('Тестовый ping отправлен!') 
+            await message.answer('Тестовый ping отправлен!', parse_mode=None)
         else:
             await message.answer('Ошибка ping API: ' + resp.text)
     except Exception as e:
