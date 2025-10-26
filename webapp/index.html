@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Участие в розыгрыше</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="screen active">
+            <div class="spinner"></div>
+            <p>Проверка условий...</p>
+        </div>
+        <div id="success" class="screen">
+            <div class="icon success-icon">✅</div>
+            <h2>Поздравляем!</h2>
+            <p>Вы успешно участвуете в розыгрыше!</p>
+        </div>
+        <div id="already" class="screen">
+            <div class="icon info-icon">ℹ️</div>
+            <h2>Вы уже участвуете</h2>
+            <p>Вы уже зарегистрированы в этом розыгрыше</p>
+        </div>
+        <div id="error" class="screen">
+            <div class="icon error-icon">❌</div>
+            <h2>Требуется подписка</h2>
+            <p id="error-message">Вы не подписаны на все нужные каналы</p>
+            <div id="channels-list" class="channels-list"></div>
+            <button id="retry-btn" class="btn btn-primary">Проверить снова</button>
+        </div>
+        <div id="fatal-error" class="screen">
+            <div class="icon error-icon">⚠️</div>
+            <h2>Произошла ошибка</h2>
+            <p id="fatal-error-message">Попробуйте позже</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
