@@ -2,6 +2,7 @@
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from bot.keyboards.inline import get_create_draw_keyboard
+from aiogram.filters import Command
 
 router = Router()
 
